@@ -212,3 +212,23 @@ a{color:var(--terracotta)}
   font: inherit; padding: .45rem .6rem; border: 1px solid #ddd4c6;
   border-radius: 8px; background: #fffdf8; flex: 1 1 12rem;
 }
+
+/* ---------- naming faces ---------- */
+.facecard{border:1px dashed var(--line);background:var(--paper2);border-radius:10px;
+  padding:14px 16px;margin:0 0 18px}
+.faceask{display:flex;align-items:baseline;gap:10px;margin:10px 0 4px}
+.faceask b{font-family:'Amatic SC',cursive;font-size:30px;color:var(--terracotta)}
+.facestrip{display:flex;flex-wrap:wrap;gap:8px}
+.facestrip img{width:96px;height:96px;object-fit:cover;border-radius:8px;
+  border:3px solid #fff;box-shadow:var(--shadow);background:#EAE2D3}
+.facestrip.small img{width:56px;height:56px;border-width:2px}
+.namebox{font:inherit;font-size:14px;padding:5px 12px;border-radius:20px;
+  border:1px solid var(--line);background:#fff;color:var(--ink);min-width:150px}
+.fbtn.ghost{background:none;color:var(--ink-soft);border-style:dashed}
+.facedone{margin-top:26px;padding-top:16px;border-top:1px dashed var(--line)}
+.facerow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.facename{font-size:17px}
+.err{color:var(--terracotta)}
+@media (max-width:700px){
+  .facestrip img{width:74px;height:74px}
+}

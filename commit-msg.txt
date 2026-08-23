@@ -1,0 +1,23 @@
+מי בתמונות: מסך מתן שמות לפרצופים בטיול חדש
+
+A new trip has nobody to compare against, so nothing can be named
+automatically. This adds the missing first step: find the faces, group the
+ones that look like the same person, ask the owner once, and from then on
+name that person everywhere - in the photos already on the site and in every
+photo that arrives later.
+
+pipeline/facescan.py   finds faces, saves a crop and the 128 numbers per face,
+                       groups the unnamed ones, reads back the owner's answers,
+                       and rewrites people-tags.json for the whole trip
+.github/workflows      installs prebuilt dlib, caches the models once, runs the
+                       face step after every ingest; it can never fail the run
+src/components/Faces   the "who is this?" screen: crops, the trip's people,
+                       a box for a new name, "not now", "not someone I know"
+src/pages/Trip         a new tab, members only
+src/live.js            faceNames: one document per group, so two people can
+                       name faces at the same time
+firestore.rules        read for the pipeline, write for members of the trip
+
+Nothing is ever guessed before the owner has given a name, and a name is only
+carried over to a new face when the match is close and clearly better than the
+runner-up. Everything written stays a suggestion - the tagging panel wins.

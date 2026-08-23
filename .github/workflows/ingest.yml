@@ -42,6 +42,33 @@ jobs:
       - name: ingest
         run: python pipeline/ingest.py
 
+      # The models are ~100 MB and never change, so they are fetched once and
+      # kept. Without them the face step simply does nothing and says so.
+      - name: face models
+        id: models
+        uses: actions/cache@v4
+        with:
+          path: /tmp/face_models
+          key: face-models-v1
+
+      - name: fetch face models
+        if: steps.models.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/face_models && cd /tmp/face_models
+          for f in shape_predictor_68_face_landmarks \
+                   dlib_face_recognition_resnet_model_v1 \
+                   mmod_human_face_detector; do
+            curl -sSL -o "$f.dat.bz2" "http://dlib.net/files/$f.dat.bz2"
+            bunzip2 -f "$f.dat.bz2"
+          done
+
+      # Groups the faces in each trip so the owner can name them once, and
+      # applies the names already given. Never fails the run: the photos are
+      # already on the site by this point.
+      - name: who is in the photos
+        continue-on-error: true
+        run: python pipeline/facescan.py
+
       - name: tidy
         if: always()
         run: rm -rf _work

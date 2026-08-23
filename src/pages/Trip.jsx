@@ -7,6 +7,7 @@ import { go } from "../lib/router";
 
 const Stories = lazy(() => import("../components/Stories"));
 const Upload = lazy(() => import("../components/Upload"));
+const Faces = lazy(() => import("../components/Faces"));
 
 const TABS = [
   ["days", "המסלול"],
@@ -57,8 +58,10 @@ export default function Trip({ trip, user, live }) {
   }, [live, trip.id]);
 
   const member = isMember(trip, user);
-  const tabs = member ? [...TABS, ["upload", "הוספת תמונות"]] : TABS;
-  const tab = wantTab === "upload" && !member ? "days" : wantTab;
+  const tabs = member
+    ? [...TABS, ["faces", "מי בתמונות"], ["upload", "הוספת תמונות"]]
+    : TABS;
+  const tab = !member && (wantTab === "upload" || wantTab === "faces") ? "days" : wantTab;
 
   const photos = media.filter((m) => m.k === "image").length;
   const videos = media.filter((m) => m.k === "video").length;
@@ -104,7 +107,7 @@ export default function Trip({ trip, user, live }) {
       <main className="wrap">
         {loading && <section className="section"><p className="lead">טוען את הטיול…</p></section>}
 
-        {!loading && !media.length && tab !== "upload" && (
+        {!loading && !media.length && tab !== "upload" && tab !== "faces" && (
           <section className="section">
             <h2>עוד אין כאן תמונות</h2>
             <p className="lead">
@@ -126,6 +129,11 @@ export default function Trip({ trip, user, live }) {
         {tab === "upload" && (
           <Suspense fallback={<section className="section"><p className="lead">רגע…</p></section>}>
             <Upload trip={trip} live={live} />
+          </Suspense>
+        )}
+        {tab === "faces" && (
+          <Suspense fallback={<section className="section"><p className="lead">רגע…</p></section>}>
+            <Faces trip={trip} user={user} member={member} live={live} />
           </Suspense>
         )}
         {tab === "stories" && (

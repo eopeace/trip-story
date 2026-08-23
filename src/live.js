@@ -66,6 +66,30 @@ export function savePhotoTags(tripId, file, data, email) {
   return empty ? deleteDoc(ref) : setDoc(ref, clean);
 }
 
+/* -------------------------------------------------------------- naming faces */
+
+/**
+ * The pipeline groups faces that look like the same person but cannot name any
+ * of them. One document per group holds the owner's answer, so two people can
+ * name faces at the same time without overwriting each other.
+ */
+export function subscribeFaceNames(tripId, cb) {
+  if (!configured || !tripId) { cb({}); return () => {}; }
+  return onSnapshot(collection(db, "trips", tripId, "faceNames"),
+    (s) => cb(Object.fromEntries(s.docs.map((d) => [d.id, d.data()]))),
+    () => cb({}));
+}
+
+export const saveFaceName = (tripId, groupId, data) =>
+  setDoc(doc(db, "trips", tripId, "faceNames", groupId), { ...data, at: serverTimestamp() });
+
+export const clearFaceName = (tripId, groupId) =>
+  deleteDoc(doc(db, "trips", tripId, "faceNames", groupId));
+
+/** A person the trip did not have yet, added the moment their face is named. */
+export const addTripPerson = (trip, person) =>
+  updateTrip(trip.id, { people: [...(trip.people || []), person] });
+
 export const addStory = (tripId, payload) =>
   addDoc(collection(db, "trips", tripId, "stories"), { ...payload, createdAt: serverTimestamp() });
 export const editStory = (tripId, id, payload) =>

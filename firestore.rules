@@ -55,6 +55,17 @@ service cloud.firestore {
         allow delete: if isMember(tripId) && resource.data.authorEmail == email();
       }
 
+      // The owner's answers to "who is this?" - one document per group of faces.
+      // Readable so the photo pipeline can pick the names up over plain HTTP.
+      match /faceNames/{group} {
+        allow read: if true;
+        allow create, update: if isMember(tripId)
+          && request.resource.data.by == email()
+          && (request.resource.data.person is string
+              || request.resource.data.ignore == true);
+        allow delete: if isMember(tripId);
+      }
+
       match /photoTags/{photo} {
         allow read: if true;
         allow create, update: if isMember(tripId)
