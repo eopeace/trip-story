@@ -37,7 +37,11 @@ service cloud.firestore {
     // whoever has the address; the photos themselves sit behind an unguessable
     // media id, which is what actually keeps them from being browsed.
     match /trips/{tripId} {
-      allow read: if resource.data.visibility != 'private'
+      // resource is null when the document does not exist. Without that first
+      // line, simply asking "does this trip already exist?" is an error, and an
+      // error in a rule is a refusal - which made every new trip impossible.
+      allow read: if resource == null
+                  || resource.data.visibility != 'private'
                   || (signedIn() && resource.data.ownerUid == request.auth.uid);
       allow create: if signedIn()
                     && request.resource.data.ownerUid == request.auth.uid

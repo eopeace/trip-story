@@ -1,11 +1,8 @@
-כללי הרשאות: הערות בסימן // כמו שהקונסולה מצפה, והודעת שגיאה אמיתית במסך השם
+כללי הרשאות: לשאול "האם הטיול כבר קיים?" הפסיק להיחשב שגיאה
 
-Two small things that together made a new account impossible to create:
+Creating a trip starts by asking whether that address is already taken. The read
+rule for a trip looked at resource.data before checking that the document exists
+at all, and on a document that does not exist that is an error - which a rule
+treats as a refusal. So every first trip failed with permission-denied.
 
-firestore.rules   the two header lines were "#" comments. Firestore rules only
-                  understand "//", so the console refuses the whole file - and a
-                  project whose rules never published denies everything.
-src/pages/NewTrip the handle screen answered "that name is taken" for every
-                  failure, permission-denied included, so every name looked
-                  taken and there was nothing to go on. Only a real collision
-                  says "taken" now; anything else shows the reason.
+One line: resource == null passes the read, exactly as "not found" should.
