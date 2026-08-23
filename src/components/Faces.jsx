@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { PALETTE, R2 } from "../data/trip";
-import { slugify } from "../live";
 
 /**
  * "Who is this?" - the screen a brand new trip needs.
@@ -17,10 +16,9 @@ import { slugify } from "../live";
 
 const cropUrl = (trip, path) => `${R2}/${trip.prefix || ""}${path}`;
 
-export default function Faces({ trip, user, member, live }) {
+export default function Faces({ trip, user, member, live, roster = [], addPerson }) {
   const [data, setData] = useState(undefined);   // undefined = still loading
   const [answers, setAnswers] = useState({});
-  const [people, setPeople] = useState(trip.people || []);
   const [skipped, setSkipped] = useState({});    // "not now", this visit only
   const [naming, setNaming] = useState(null);    // group id whose name box is open
   const [typed, setTyped] = useState("");
@@ -41,8 +39,7 @@ export default function Faces({ trip, user, member, live }) {
     return live.subscribeFaceNames(trip.id, setAnswers);
   }, [live, trip.id]);
 
-  useEffect(() => setPeople(trip.people || []), [trip.people]);
-
+  const people = roster;
   const byId = useMemo(
     () => Object.fromEntries(people.map((p, i) => [p.id, { ...p, color: p.color || PALETTE[i % PALETTE.length] }])),
     [people],
@@ -67,23 +64,18 @@ export default function Faces({ trip, user, member, live }) {
 
   async function nameNew(gid) {
     const label = typed.trim();
-    if (!label) return;
-    const existing = people.find((p) => p.he === label);
-    if (existing) return answer(gid, { person: existing.id });
-
-    let id = slugify(label);
-    if (!id || byId[id]) id = `p${people.length + 1}`;
-    const person = { id, he: label, color: PALETTE[people.length % PALETTE.length] };
+    if (!label || !addPerson) return;
     setBusy(gid); setErr("");
+    let person;
     try {
-      await live.addTripPerson(trip, person);
-      setPeople((list) => [...list, person]);
+      person = await addPerson(label);
     } catch {
       setBusy(null);
       setErr("לא הצלחנו להוסיף את השם לטיול.");
       return;
     }
-    return answer(gid, { person: id });
+    if (!person) { setBusy(null); return; }
+    return answer(gid, { person: person.id });
   }
 
   if (!member) {
@@ -179,9 +171,14 @@ export default function Faces({ trip, user, member, live }) {
       {done.length > 0 && (
         <div className="facedone">
           <h3>מה שכבר סימנתם</h3>
-          <p className="hint">
-            השמות נכנסים לגלריה תוך רבע שעה בערך, יחד עם המעבר הבא על התמונות.
-          </p>
+          <div className="status busy">
+            <span className="dot" />
+            <span>
+              <b>{done.length} שמות נשמרו.</b> במעבר הבא על התמונות — בדרך כלל תוך רבע
+              שעה — נזהה את אותם אנשים בכל שאר התמונות, והם יופיעו בגלריה ובסינון
+              לפי אדם.
+            </span>
+          </div>
           {done.map((g) => (
             <div className="facerow" key={g.id}>
               <div className="facestrip small">
@@ -198,9 +195,7 @@ export default function Faces({ trip, user, member, live }) {
       )}
 
       {data.singles > 0 && (
-        <p className="hint">
-          יש עוד {data.singles} פרצופים שהופיעו פעם אחת בלבד. נחכה שיופיעו שוב לפני שנשאל עליהם.
-        </p>
+        <p className="hint">ועוד {data.singles} פרצופים בודדים.</p>
       )}
     </section>
   );

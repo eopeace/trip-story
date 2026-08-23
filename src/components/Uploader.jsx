@@ -25,7 +25,7 @@ function put(url, file, onProgress) {
  * Files go straight from the phone to storage, which is what keeps the date and the
  * place inside each photo; anything that passes through a chat app loses both.
  */
-export default function Uploader({ token, days = [] }) {
+export default function Uploader({ token, days = [], tripId = "", tripPath = "" }) {
   const [name, setName] = useState(readName);
   const [files, setFiles] = useState([]);
   const [day, setDay] = useState("");
@@ -84,6 +84,14 @@ export default function Uploader({ token, days = [] }) {
       }
     } catch (ex) {
       setErr(ex.message || "משהו השתבש");
+    }
+    // Remember that something was sent, so the trip page can say "yours are still
+    // on the way" instead of looking empty for a quarter of an hour.
+    if (ok && tripId) {
+      try {
+        localStorage.setItem(`ts-up-${tripId}`,
+          JSON.stringify({ n: ok, at: new Date().toISOString() }));
+      } catch { /* private window - the upload still worked */ }
     }
     setBusy(false);
   }
@@ -151,9 +159,20 @@ export default function Uploader({ token, days = [] }) {
           {busy ? "מעלים…" : files.length ? `שליחה · ${files.length} קבצים · ${fmt(total)}` : "שליחה"}
         </button>
         {done > 0 && !busy && (
-          <span className="who">עלו {done} קבצים. תודה! הם יופיעו באתר תוך כרבע שעה בערך.</span>
+          <span className="who">עלו {done} קבצים. תודה!</span>
         )}
       </div>
+
+      {done > 0 && !busy && (
+        <div className="afterup">
+          <b>מה קורה עכשיו</b>
+          <p>
+            אנחנו מסדרים את התמונות, מזהים מתי ואיפה צולמו, ומחפשים מי מופיע בהן.
+            זה לוקח בדרך כלל עד רבע שעה.
+          </p>
+          {tripPath && <a className="btn" href={tripPath}>לצפייה בטיול</a>}
+        </div>
+      )}
     </form>
   );
 }

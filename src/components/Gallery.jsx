@@ -19,7 +19,8 @@ const readSize = () => {
 };
 
 export default function Gallery({ media, stories = [], people = {}, photoTags = {},
-  user = null, member = false, saveTags, dayFilter, setDayFilter, login, logout }) {
+  user = null, member = false, saveTags, dayFilter, setDayFilter, login, logout,
+  roster = [], addPerson }) {
   const [kind, setKind] = useState("all");
   const [act, setAct] = useState("all");
   const [who, setWho] = useState("all");
@@ -148,7 +149,7 @@ export default function Gallery({ media, stories = [], people = {}, photoTags = 
           <span className="lbl">מי בתמונה:</span>
           <button className={"fbtn" + (who === "all" ? " on" : "")} onClick={() => setWho("all")}>הכול</button>
           {peopleCounts.map(([id, n]) => {
-            const p = PEOPLE.find((x) => x.id === id);
+            const p = roster.find((x) => x.id === id) || PEOPLE.find((x) => x.id === id);
             return (
               <button key={id} className={"fbtn" + (who === id ? " on" : "")}
                 onClick={() => setWho(id)}
@@ -193,7 +194,8 @@ export default function Gallery({ media, stories = [], people = {}, photoTags = 
       )}
 
       {lb >= 0 && <Lightbox list={list} index={lb} setIndex={setLb} onClose={() => setLb(-1)}
-        canTag={canTag} tags={photoTags} onSaveTags={saveTags} />}
+        canTag={canTag} tags={photoTags} onSaveTags={saveTags}
+        roster={roster} addPerson={addPerson} />}
     </section>
   );
 }

@@ -27,6 +27,7 @@ import json
 import os
 import sys
 import urllib.request
+from datetime import datetime, timezone
 
 import numpy as np
 from PIL import Image, ImageOps
@@ -55,7 +56,7 @@ CROP_PAD = 0.35       # show a little around the face so it is recognisable
 CROP_PX = 220
 MAX_CROPS = 9         # crops sent to the naming screen per group
 MAX_GROUPS = 80       # groups sent to the naming screen at once
-MIN_GROUP = 2         # a single stray face is not worth asking about yet
+MIN_GROUP = 1         # even a face seen once can be named - it is often the point
 BACKFILL = 400        # photos already on a trip looked at per run, so one run ends
 
 
@@ -376,6 +377,18 @@ def scan_trip(s3, prefix, fresh, load_det):
 
     state = {"faces": faces, "photos": sorted(seen_photos), "next": next_id}
     r2.put_json(s3, f"{prefix}face-index.json", state)
+
+    # A small public note saying when the trip was last looked at, so the site can
+    # tell a visitor whether their photos have been through yet instead of asking
+    # them to guess.
+    r2.put_json(s3, f"{prefix}status.json", {
+        "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "photos": sum(1 for m in manifest if m.get("k") == "image"),
+        "videos": sum(1 for m in manifest if m.get("k") == "video"),
+        "faces": len(faces),
+        "named": {p: int(len(v)) for p, v in vecs.items()},
+        "pending": len(pending),
+    })
     print(f"   {label}: {len(faces)} face(s) · named {sum(1 for f in faces.values() if f.get('p'))}"
           f" · {len(pending)} group(s) waiting for a name")
 

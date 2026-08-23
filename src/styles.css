@@ -232,3 +232,49 @@ a{color:var(--terracotta)}
 @media (max-width:700px){
   .facestrip img{width:74px;height:74px}
 }
+
+/* ---------- what the site is busy with ---------- */
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;
+  margin:14px 0 0;padding:10px 14px;border-radius:12px;
+  background:var(--paper2);border:1px dashed var(--line);
+  font-size:14px;color:var(--ink-soft);line-height:1.5}
+.status.busy{border-style:solid;border-color:var(--mustard);
+  background:rgba(224,169,59,.16);color:var(--ink)}
+.status .dot{width:9px;height:9px;border-radius:50%;background:var(--mustard);
+  flex:0 0 auto;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.status .dot{animation:none}}
+.linkish{font:inherit;font-size:14px;background:none;border:0;color:var(--terracotta);
+  cursor:pointer;padding:4px 0;text-decoration:underline}
+.afterup{margin-top:16px;padding:14px 16px;border-radius:12px;
+  background:var(--paper2);border:1px dashed var(--line)}
+.afterup b{display:block;font-family:'Amatic SC',cursive;font-size:28px;color:var(--terracotta)}
+.afterup p{margin:.2rem 0 .9rem;color:var(--ink-soft)}
+.afterup .btn{display:inline-block;text-decoration:none}
+
+/* ---------- phones: this is where the photos are ---------- */
+@media (max-width:700px){
+  .wrap{padding:0 14px}
+  /* the trip name gets its own line, so the tabs stop colliding with it */
+  .nav .wrap{gap:2px 16px;padding-block:4px}
+  .nav .brand{flex:1 0 100%;text-align:center;font-size:27px;padding:4px 0 0}
+  .nav button{font-size:15px;padding:9px 4px}
+  .hero{padding:26px 0 10px}
+  .section{padding:24px 0}
+  .section > h2{font-size:38px}
+  .statrow{gap:18px;margin:18px 0 6px}
+  .stat b{font-size:36px}
+  /* every chip a thumb can actually hit */
+  .fbtn,.chip{font-size:15px;padding:8px 14px;line-height:1.2}
+  .btn{padding:.6rem 1.2rem}
+  .filters{gap:7px;margin:12px 0 16px}
+  .grid{gap:14px}
+  .day{grid-template-columns:1fr;gap:14px}
+  .tagpanel{max-height:60vh;padding:.9rem .9rem calc(.9rem + env(safe-area-inset-bottom))}
+  .tagnew{width:7.5rem}
+  .uprow > span{min-width:100%}
+  .sharebox .link{flex:1 1 100%;font-size:.8rem}
+  .facecard{padding:12px}
+  .status{font-size:14.5px}
+}
+

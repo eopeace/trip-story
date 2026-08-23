@@ -50,7 +50,8 @@ export default function Upload({ trip, live }) {
         קישור חדש מבטל את הקודם. הקישור מאפשר להוסיף תמונות בלבד — לא לערוך את האתר.
       </p>
 
-      {open && token && <Uploader token={token} days={DAYS} />}
+      {open && token && <Uploader token={token} days={DAYS}
+        tripId={trip.id} tripPath={`/${trip.handle}/${trip.slug}`} />}
     </section>
   );
 }

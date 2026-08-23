@@ -3,12 +3,14 @@ import { ACTIVITIES, DAYS, PEOPLE, PLACES, url } from "../data/trip";
 
 const EMPTY = { people: [], acts: [], placeKey: "", dayId: "" };
 
-export default function Lightbox({ list, index, setIndex, onClose, canTag, tags = {}, onSaveTags }) {
+export default function Lightbox({ list, index, setIndex, onClose, canTag, tags = {},
+  onSaveTags, roster = [], addPerson }) {
   const m = list[index];
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(EMPTY);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [typed, setTyped] = useState("");
   const touch = useRef(null);
 
   const go = (step) => setIndex((i) => (i + step + list.length) % list.length);
@@ -50,9 +52,25 @@ export default function Lightbox({ list, index, setIndex, onClose, canTag, tags 
   if (!m) return null;
   const when = new Date(m.dt).toLocaleString("he-IL", { dateStyle: "long", timeStyle: "short" });
   const saved = tags[m.f];
+  const list_people = roster.length ? roster : PEOPLE;
   const toggle = (key, v) => setDraft((d) => ({
     ...d, [key]: d[key].includes(v) ? d[key].filter((x) => x !== v) : [...d[key], v],
   }));
+
+  // Adding a name from inside a photo, for the face the grouping never asked about.
+  async function addNew() {
+    const label = typed.trim();
+    if (!label || !addPerson) return;
+    setBusy(true); setErr("");
+    try {
+      const p = await addPerson(label);
+      if (p) setDraft((d) => ({
+        ...d, people: d.people.includes(p.id) ? d.people : [...d.people, p.id],
+      }));
+      setTyped("");
+    } catch { setErr("לא הצלחנו להוסיף את השם"); }
+    setBusy(false);
+  }
 
   async function save(e) {
     e.stopPropagation();
@@ -104,7 +122,7 @@ export default function Lightbox({ list, index, setIndex, onClose, canTag, tags 
         <div className="tagpanel" onClick={(e) => e.stopPropagation()}>
           <div className="tagrow">
             <span className="lbl">מי בתמונה</span>
-            {PEOPLE.map((p) => (
+            {list_people.map((p) => (
               <button key={p.id}
                 className={"fbtn" + (draft.people.includes(p.id) ? " on" : "")}
                 style={draft.people.includes(p.id)
@@ -112,7 +130,19 @@ export default function Lightbox({ list, index, setIndex, onClose, canTag, tags 
                   : { borderColor: p.color }}
                 onClick={() => toggle("people", p.id)}>{p.he}</button>
             ))}
+            {addPerson && (
+              <>
+                <input className="tagnew" value={typed} placeholder="שם חדש"
+                  onChange={(e) => setTyped(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addNew(); } }} />
+                <button className="fbtn" disabled={!typed.trim() || busy}
+                  onClick={addNew}>+ הוספה</button>
+              </>
+            )}
           </div>
+          {!list_people.length && (
+            <p className="note">אף אחד עוד לא נוסף לטיול. הקלידו שם ולחצו הוספה.</p>
+          )}
 
           <div className="tagrow">
             <span className="lbl">איפה</span>

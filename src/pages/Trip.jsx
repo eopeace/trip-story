@@ -1,8 +1,9 @@
 import { Suspense, lazy, useEffect, useState } from "react";
 import Days from "../components/Days";
+import Status from "../components/Status";
 import Gallery from "../components/Gallery";
 import MapView from "../components/MapView";
-import { DAYS, R2, configure } from "../data/trip";
+import { DAYS, PALETTE, R2, configure } from "../data/trip";
 import { go } from "../lib/router";
 
 const Stories = lazy(() => import("../components/Stories"));
@@ -27,6 +28,7 @@ export default function Trip({ trip, user, live }) {
   const [people, setPeople] = useState({});
   const [photoTags, setPhotoTags] = useState({});
   const [loading, setLoading] = useState(true);
+  const [roster, setRoster] = useState(trip.people || []);
 
   configure(trip);
 
@@ -68,6 +70,21 @@ export default function Trip({ trip, user, live }) {
   const spots = new Set(media.filter((m) => m.gps)
     .map((m) => m.gps[0].toFixed(3) + m.gps[1].toFixed(3))).size;
 
+  // A new trip starts with nobody in it. Whoever is tagging can add a name on the
+  // spot, from the naming screen or from a photo, and it joins the trip for good.
+  async function addPerson(label) {
+    const name = String(label || "").trim();
+    if (!name || !live || !user) return null;
+    const found = roster.find((p) => p.he === name);
+    if (found) return found;
+    let id = live.slugify(name);
+    if (!id || roster.some((p) => p.id === id)) id = `p${roster.length + 1}`;
+    const person = { id, he: name, color: PALETTE[roster.length % PALETTE.length] };
+    await live.addTripPerson({ ...trip, people: roster }, person);
+    setRoster((list) => [...list, person]);
+    return person;
+  }
+
   const saveTags = (file, draft) =>
     live && user ? live.savePhotoTags(trip.id, file, draft, user.email.toLowerCase())
       : Promise.resolve();
@@ -105,6 +122,8 @@ export default function Trip({ trip, user, live }) {
       )}
 
       <main className="wrap">
+        <Status trip={trip} member={member} onFaces={() => setTab("faces")} />
+
         {loading && <section className="section"><p className="lead">טוען את הטיול…</p></section>}
 
         {!loading && !media.length && tab !== "upload" && tab !== "faces" && (
@@ -122,6 +141,7 @@ export default function Trip({ trip, user, live }) {
         {tab === "gallery" && (
           <Gallery media={media} stories={stories} people={people} photoTags={photoTags}
             user={user} member={member} saveTags={saveTags}
+            roster={roster} addPerson={addPerson}
             dayFilter={dayFilter} setDayFilter={setDayFilter}
             login={live?.login} logout={live?.logout} />
         )}
@@ -133,7 +153,8 @@ export default function Trip({ trip, user, live }) {
         )}
         {tab === "faces" && (
           <Suspense fallback={<section className="section"><p className="lead">רגע…</p></section>}>
-            <Faces trip={trip} user={user} member={member} live={live} />
+            <Faces trip={trip} user={user} member={member} live={live}
+              roster={roster} addPerson={addPerson} />
           </Suspense>
         )}
         {tab === "stories" && (
