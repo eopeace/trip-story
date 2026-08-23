@@ -53,7 +53,14 @@ export default function NewTrip({ user, live, handle, onHandle }) {
           if (!h) { setErr("צריך שם באותיות באנגלית"); return; }
           setBusy(true); setErr("");
           try { onHandle(await live.claimHandle(h, user)); }
-          catch { setErr("השם הזה תפוס, נסו אחר"); }
+          catch (ex) {
+            // "taken" is the only answer worth showing plainly. Anything else is
+            // a real failure, and saying "taken" for it sends people in circles
+            // trying name after name.
+            setErr(ex?.message === "taken"
+              ? "השם הזה תפוס, נסו אחר"
+              : `לא הצלחנו לשמור את השם: ${ex?.code || ex?.message || "שגיאה"}`);
+          }
           setBusy(false);
         }}>
           <label className="uprow">
@@ -82,7 +89,9 @@ export default function NewTrip({ user, live, handle, onHandle }) {
       });
       go(`/${handle}/${s}`);
     } catch (ex) {
-      setErr(ex.message === "exists" ? "כבר יש לכם טיול בשם הזה" : "היצירה נכשלה");
+      setErr(ex?.message === "exists"
+        ? "כבר יש לכם טיול בשם הזה"
+        : `היצירה נכשלה: ${ex?.code || ex?.message || "שגיאה"}`);
       setBusy(false);
     }
   }
