@@ -1,6 +1,11 @@
-להגיד מה באמת נכשל במסך השם, במקום "תפוס"
+כללי הרשאות: הערות בסימן // כמו שהקונסולה מצפה, והודעת שגיאה אמיתית במסך השם
 
-Claiming a handle showed "that name is taken" for every failure, including
-permission errors, so every name looked taken and there was nothing to go on.
-Now only a real collision says "taken"; anything else shows the reason.
-Same for creating a trip.
+Two small things that together made a new account impossible to create:
+
+firestore.rules   the two header lines were "#" comments. Firestore rules only
+                  understand "//", so the console refuses the whole file - and a
+                  project whose rules never published denies everything.
+src/pages/NewTrip the handle screen answered "that name is taken" for every
+                  failure, permission-denied included, so every name looked
+                  taken and there was nothing to go on. Only a real collision
+                  says "taken" now; anything else shows the reason.

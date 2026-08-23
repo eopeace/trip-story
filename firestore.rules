@@ -1,5 +1,5 @@
-# Project trip-barmitzva. Kept in version control, published from the console.
-# Updated 22-08-2026: many trips, each owned by one account.
+// Project trip-barmitzva. Kept in version control, published from the console.
+// Updated 22-08-2026: many trips, each owned by one account.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
