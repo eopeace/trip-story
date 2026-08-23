@@ -11,6 +11,15 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 
+# Anyone who types the bare address lands on http, and a browser that has been
+# there once keeps going back to it. Send it to https ourselves rather than
+# relying on the host to do it.
+[[redirects]]
+  from = "http://trips.tripus.ai/*"
+  to = "https://trips.tripus.ai/:splat"
+  status = 301
+  force = true
+
 # must come before the catch-all below, or the upload endpoint gets swallowed
 [[redirects]]
   from = "/api/*"

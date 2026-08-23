@@ -1,9 +1,6 @@
-לא לשמור סרטונים במקור, ולהגיד את זה בפירוש למי שמעלה
+לשלוח כתובת http לגרסה המאובטחת בעצמנו
 
-The original of one video takes more room than a hundred photos, and the copy the
-site plays is already good. Photos keep their untouched original - they are small,
-and it is what lets a better version be made later.
-
-The upload page now says exactly what is kept and what is not, so nobody deletes
-a video from their phone believing we have it. Keeping video originals is the
-kind of thing worth charging for later.
+The certificate is in place, but typing the bare address still lands on http,
+and a browser that has been there once keeps going back. One redirect rule
+sends it to https, for everyone, without depending on a host setting that is
+not offered on this plan.
