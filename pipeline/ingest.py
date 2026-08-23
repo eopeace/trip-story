@@ -6,7 +6,7 @@ site ships with. Safe to re-run: everything already handled is recorded in
 public/media-index.json and skipped.
 
   inbox/<person>/<dayid|auto>/<stamp>-<name>   uploads land here
-  originals/<person>/<name>                    kept forever, never served
+  originals/<person>/<name>                    photos only, kept forever, never served
   images/ thumbs/ videos/ posters/             what the site actually loads
 """
 import hashlib
@@ -437,8 +437,12 @@ def process_trip(s3, prefix, inbox):
         print(f"   added as {name}  {dt}{' (time estimated)' if est else ''}"
               f"{' gps' if gps else ''}")
 
-        # keep the untouched original, then clear the inbox slot
-        r2.put(s3, f"{prefix}originals/{person}/{name.rsplit('.', 1)[0]}{ext}", src)
+        # Keep the untouched original of a photo - it is small, and it is what
+        # lets a better version be made later. Videos are not kept: the original
+        # of one video costs more room than a hundred photos, and the copy the
+        # site plays is already good. The upload page says so plainly.
+        if kind == "image":
+            r2.put(s3, f"{prefix}originals/{person}/{name.rsplit('.', 1)[0]}{ext}", src)
         r2.delete(s3, key)
 
     # nudge estimated times apart so the order inside a day stays stable

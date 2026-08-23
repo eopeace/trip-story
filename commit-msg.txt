@@ -1,27 +1,9 @@
-לספר לאנשים מה קורה, ולתת לתייג כל פרצוף - גם כזה שהופיע פעם אחת
+לא לשמור סרטונים במקור, ולהגיד את זה בפירוש למי שמעלה
 
-Six things from the first real run on a phone.
+The original of one video takes more room than a hundred photos, and the copy the
+site plays is already good. Photos keep their untouched original - they are small,
+and it is what lets a better version be made later.
 
-Nobody could add a name. A new trip starts with an empty list of people, and the
-tagging panel could only offer names that were already there - so a face the
-grouping never asked about could not be tagged at all. Now a name can be typed
-straight into a photo, and it joins the trip. The naming screen uses the same
-one place, so both stay in step.
-
-A face seen once was never asked about. It is often exactly the one worth
-naming. Asked about now, after the ones seen more often.
-
-Nothing said how long anything takes. The job wakes every quarter of an hour,
-so a trip could look empty or unchanged for that long with no explanation. The
-job now writes down when it last looked; the browser remembers when it last
-sent. If yours are newer, the trip says "your photos are on the way" and what is
-being done to them - otherwise it says when it last updated, and offers the
-owner the faces waiting for a name. The naming screen says the same after you
-answer.
-
-Whoever uploads can now get to the trip: a link on the upload page, and a
-"what happens now" note with the same link once files have gone up.
-
-Phones. The trip name has its own line so the tabs stop colliding with it,
-chips are thumb sized, headings and spacing scaled down, the tagging panel
-clears the home bar.
+The upload page now says exactly what is kept and what is not, so nobody deletes
+a video from their phone believing we have it. Keeping video originals is the
+kind of thing worth charging for later.

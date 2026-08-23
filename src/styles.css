@@ -278,3 +278,7 @@ a{color:var(--terracotta)}
   .status{font-size:14.5px}
 }
 
+.keepnote{border-inline-start:3px solid var(--mustard);padding-inline-start:10px;opacity:1;
+  color:var(--ink-soft)}
+.keepnote b{color:var(--ink)}
+
