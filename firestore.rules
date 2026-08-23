@@ -1,0 +1,122 @@
+# Project trip-barmitzva. Kept in version control, published from the console.
+# Updated 22-08-2026: many trips, each owned by one account.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function email()    { return request.auth.token.email.lower(); }
+    function tripOf(id) { return get(/databases/$(database)/documents/trips/$(id)).data; }
+
+    // The owner, plus anyone the owner listed as an editor of that trip.
+    function isMember(id) {
+      return signedIn()
+        && (tripOf(id).ownerUid == request.auth.uid || email() in tripOf(id).editors);
+    }
+
+    function goodText() {
+      return request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+    }
+
+    // --- who owns which name in the address bar -----------------------------
+    match /handles/{handle} {
+      allow read: if true;                       // so signup can say "taken"
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // --- trips ---------------------------------------------------------------
+    // A private trip is visible only to its owner. Anything else is readable by
+    // whoever has the address; the photos themselves sit behind an unguessable
+    // media id, which is what actually keeps them from being browsed.
+    match /trips/{tripId} {
+      allow read: if resource.data.visibility != 'private'
+                  || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if signedIn()
+                    && request.resource.data.ownerUid == request.auth.uid
+                    && request.resource.data.handle is string
+                    && request.resource.data.slug is string;
+      allow update, delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      match /stories/{story} {
+        allow read: if true;
+        allow create: if isMember(tripId) && goodText()
+                      && request.resource.data.authorEmail == email();
+        allow update: if isMember(tripId) && goodText()
+                      && resource.data.authorEmail == email()
+                      && request.resource.data.authorEmail == resource.data.authorEmail;
+        allow delete: if isMember(tripId) && resource.data.authorEmail == email();
+      }
+
+      match /photoTags/{photo} {
+        allow read: if true;
+        allow create, update: if isMember(tripId)
+          && request.resource.data.by == email()
+          && request.resource.data.file is string
+          && request.resource.data.people is list
+          && request.resource.data.people.size() <= 20
+          && request.resource.data.acts is list
+          && request.resource.data.acts.size() <= 20;
+        allow delete: if isMember(tripId);
+      }
+    }
+
+    // Lets the processing job get from a storage folder back to the trip that owns
+    // it. Holds nothing but that pairing.
+    match /mediaIndex/{mediaId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // --- upload links --------------------------------------------------------
+    // Readable while open so the upload endpoint can resolve a link into a trip.
+    // Holds no personal data: just which trip it feeds and where the files go.
+    match /uploadTokens/{token} {
+      allow read: if resource.data.open == true;
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // --- the original Vienna collections, until that trip is migrated --------
+    function isViennaEditor() {
+      return signedIn() && email() in [
+        'eopeace@gmail.com', 'oronyarin@gmail.com', 'oronadelli@gmail.com',
+        'oronberry@gmail.com', 'saraoron@gmail.com', 'irisoron@gmail.com'
+      ];
+    }
+
+    match /vienna-trip-stories/{story} {
+      allow read: if true;
+      allow create: if isViennaEditor() && goodText()
+        && request.resource.data.authorEmail == email();
+      allow update: if isViennaEditor() && goodText()
+        && resource.data.authorEmail == email()
+        && request.resource.data.authorEmail == resource.data.authorEmail;
+      allow delete: if isViennaEditor() && resource.data.authorEmail == email();
+    }
+
+    match /vienna-trip-photo-tags/{photo} {
+      allow read: if true;
+      allow create, update: if isViennaEditor()
+        && request.resource.data.by == email()
+        && request.resource.data.file is string
+        && request.resource.data.people is list
+        && request.resource.data.people.size() <= 12
+        && request.resource.data.acts is list
+        && request.resource.data.acts.size() <= 20;
+      allow delete: if isViennaEditor();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
