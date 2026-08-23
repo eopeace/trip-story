@@ -1,0 +1,16 @@
+{
+  // Tells Cloudflare what this project is: a small script that answers one
+  // address (/api/upload-url) and hands out the built site for everything else.
+  "name": "trip-story",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-08-01",
+
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // any address that is not a real file gets the app itself, so deep links work
+    "not_found_handling": "single-page-application",
+    // the upload endpoint must reach the script, never the static files
+    "run_worker_first": ["/api/*"]
+  }
+}
