@@ -15,6 +15,7 @@ concurrency:
 
 permissions:
   contents: read
+  actions: write   # lets the last step keep this schedule switched on
 
 jobs:
   ingest:
@@ -73,4 +74,11 @@ jobs:
         if: always()
         run: rm -rf _work
 
-# Last touched 16-10-2026 so GitHub keeps the schedule enabled (it pauses schedules after 60 days without a commit).
+      # GitHub switches off a scheduled workflow after 60 days without a
+      # commit. Re-enabling it on every run resets that clock, so the ingest
+      # keeps running even when nobody touches the repo.
+      - name: keep schedule alive
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/ingest.yml/enable"
