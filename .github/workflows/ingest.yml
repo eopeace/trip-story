@@ -72,3 +72,5 @@ jobs:
       - name: tidy
         if: always()
         run: rm -rf _work
+
+# Last touched 16-10-2026 so GitHub keeps the schedule enabled (it pauses schedules after 60 days without a commit).
